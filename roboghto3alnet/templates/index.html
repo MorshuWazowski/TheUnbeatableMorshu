@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RPS Mind Games</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+        }
+        
+        #arena {
+            position: relative;
+            height: 70vh;
+            width: 100%;
+            border-bottom: 3px solid #444;
+        }
+        
+        #character {
+            position: absolute;
+            font-size: 120px;
+            left: 50%;
+            bottom: 50px;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+        
+        #taunt {
+            font-size: 24px;
+            margin: 20px;
+            min-height: 60px;
+            color: #ff5555;
+        }
+        
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        .move-option {
+            font-size: 80px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .move-option:hover {
+            transform: scale(1.2);
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .move-option:active {
+            transform: scale(0.9);
+        }
+        
+        @keyframes swing {
+            0%, 100% { transform: translateX(-50%) rotate(-15deg); }
+            50% { transform: translateX(-50%) rotate(15deg); }
+        }
+        
+        @keyframes reveal {
+            0% { transform: translateX(-50%) scale(0); }
+            80% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        
+        .swinging {
+            animation: swing 1.5s infinite ease-in-out;
+        }
+        
+        .revealing {
+            animation: reveal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body>
+    <div id="arena">
+        <div id="character" class="swinging">🤖</div>
+    </div>
+    <div id="taunt">I already know what you'll pick... don't bother!</div>
+    
+    <div class="options">
+        <div class="move-option" id="rock" onclick="play('rock')">✊</div>
+        <div class="move-option" id="paper" onclick="play('paper')">✋</div>
+        <div class="move-option" id="scissors" onclick="play('scissors')">✌️</div>
+    </div>
+
+    <script>
+        const character = document.getElementById('character');
+        const tauntDiv = document.getElementById('taunt');
+        let lockedIn = false;
+        
+        // Winning moves and taunts
+        const COUNTER_MOVES = {
+            'rock': { emoji: '✋', taunt: "PAPER COVERS ROCK! I WIN!" },
+            'paper': { emoji: '✌️', taunt: "SCISSORS CUT PAPER! TOO EASY!" },
+            'scissors': { emoji: '✊', taunt: "ROCK SMASHES SCISSORS! PATHETIC!" }
+        };
+        
+        // Rotating taunts while waiting
+        const WAITING_TAUNTS = [
+            "I can read your mind...",
+            "You'll never beat me!",
+            "Your tells are obvious!",
+            "I know what you're thinking!",
+            "Just give up now!"
+        ];
+        
+        // Cycle through taunts every 3 seconds
+        setInterval(() => {
+            if (!lockedIn) {
+                tauntDiv.textContent = WAITING_TAUNTS[
+                    Math.floor(Math.random() * WAITING_TAUNTS.length)
+                ];
+            }
+        }, 3000);
+        
+        function play(yourMove) {
+            if (lockedIn) return;
+            lockedIn = true;
+            
+            // Stop swinging and reveal AI's move
+            character.classList.remove('swinging');
+            character.classList.add('revealing');
+            
+            const counter = COUNTER_MOVES[yourMove];
+            character.textContent = counter.emoji;
+            tauntDiv.textContent = counter.taunt;
+            
+            // Disable options after selection
+            document.querySelectorAll('.move-option').forEach(el => {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+            });
+            
+            // Reset after 3 seconds
+            setTimeout(resetGame, 3000);
+        }
+        
+        function resetGame() {
+            lockedIn = false;
+            character.textContent = '🤖';
+            character.classList.remove('revealing');
+            character.classList.add('swinging');
+            tauntDiv.textContent = "Again? You'll lose this time too!";
+            
+            document.querySelectorAll('.move-option').forEach(el => {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+            });
+        }
+    </script>
+</body>
+</html>
